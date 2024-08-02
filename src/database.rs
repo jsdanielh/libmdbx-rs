@@ -5,7 +5,7 @@ use crate::{
     transaction::{RO, RW},
     Mode, ReadWriteOptions, SyncMode, Transaction, TransactionKind,
 };
-use libc::c_uint;
+use libc::{c_uint,c_int};
 use mem::size_of;
 use sealed::sealed;
 #[cfg(windows)]
@@ -347,6 +347,12 @@ where
     pub fn sync(&self, force: bool) -> Result<bool> {
         mdbx_result(unsafe { ffi::mdbx_env_sync_ex(self.ptr().0, force, false) })
     }
+
+    /// Flush the database data buffers to disk.
+    pub fn size(&self, options: DatabaseOptions) -> c_int {
+        unsafe { ffi::mdbx_env_get_valsize4page_max(self.ptr().0, options.make_flags() | E::EXTRA_FLAGS) }
+    }
+
 
     /// Retrieves statistics about this database.
     pub fn stat(&self) -> Result<Stat> {
